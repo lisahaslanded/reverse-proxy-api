@@ -1,0 +1,11 @@
+[Interface]
+Address = 10.0.0.2/32
+#ListenPort = 51820
+PrivateKey = {{ web_privkey }}
+PostUp = ping -c1 10.0.0.1
+
+[Peer]
+PublicKey = bzKqDtV6LatsCjk4vsH7Ockw/J6lW1hZh5fNu52XCUQ=
+AllowedIPs = 10.0.0.1/32
+Endpoint = 192.168.56.5:51820
+PersistentKeepalive = 25

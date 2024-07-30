@@ -1,0 +1,47 @@
+- name: secure web server
+  hosts: webservers
+  remote_user: vagrant
+  become: yes
+
+  tasks:
+    - name: route traffic to application host
+      iptables:
+        table: nat
+        chain: PREROUTING
+        source: 10.0.0.0/30
+        destination: 10.0.0.2
+        jump: DNAT
+        to_destination: 192.168.56.4
+    - name: allow related and established connections
+      iptables:
+        chain: INPUT
+        ctstate: ESTABLISHED,RELATED
+        jump: ACCEPT
+    - name: allow ssh access via management interface
+      iptables:
+        chain: INPUT
+        source: 10.0.2.15/24
+        protocol: tcp
+        destination_port: 22
+        jump: ACCEPT
+    - name: allow rproxy access to application host
+      iptables:
+        chain: INPUT
+        source: 10.0.0.0/30
+        protocol: tcp
+        destination_port: 8080
+        jump: ACCEPT
+    - name: allow udp traffic on wireguard port
+      iptables:
+        chain: INPUT
+        protocol: udp
+        destination_port: 51820
+        jump: ACCEPT
+    - name: set the policy for the INPUT chain to DROP
+      iptables:
+        chain: INPUT
+        policy: DROP
+    - name: set the policy for the FORWARD chain to DROP
+      iptables:
+        chain: FORWARD
+        policy: DROP
