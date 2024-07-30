@@ -1,0 +1,37 @@
+---
+- name: configure rproxy vpn
+  hosts: rproxyservers
+  remote_user: vagrant
+  become: yes
+
+  tasks:
+    - name: install wireguard
+      apt:
+        name: wireguard
+        state: latest
+        update-cache: true
+    - name: write vpn config
+      vars:
+        rproxy_privkey: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          62376531393566643363616631616264383661623839323636663661363533303366356638343632
+          6439303238626238646264346237643663366233336136300a343535616432303466653966643666
+          38633361303166346432333536663938376261383931663639363866333764663631366634636361
+          3236306162333434620a373530373863373665373934333635323339333732373731636432666630
+          35656133373834623132643436353637303532333330616133613764636266393734396431643432
+          3762623635663561373564613037633836623038313462363035
+        rproxy_pubkey: bzKqDtV6LatsCjk4vsH7Ockw/J6lW1hZh5fNu52XCUQ=
+      template:
+        src: ./templates/rproxy_wg0.conf.j2
+        dest: /etc/wireguard/wg0.conf
+        owner: root
+        group: root
+        mode: "0600"
+    - name: start vpn
+      shell: |
+        wg-quick down wg0
+        wg-quick up wg0
+    - name: enable ip forwarding
+      shell: |
+        sysctl -w net.ipv4.ip_forward=1
+        echo 1 > /proc/sys/net/ipv4/ip_forward

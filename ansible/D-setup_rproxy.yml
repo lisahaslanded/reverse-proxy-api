@@ -1,0 +1,25 @@
+---
+- name: setup reverse proxy
+  hosts: rproxyservers
+  remote_user: vagrant
+  become: yes
+
+  tasks:
+    - name: install nginx
+      apt:
+        pkg:
+          - nginx
+        state: latest
+        update-cache: true
+    - name: copy webserver config file
+      template:
+        src: ./templates/webserver.conf
+        dest: /etc/nginx/sites-available
+    - name: enable webserver config
+      shell: |
+        rm /etc/nginx/sites-enabled/default
+        ln -s /etc/nginx/sites-available/webserver.conf /etc/nginx/sites-enabled/default
+    - name: restart nginx
+      service:
+        name: nginx
+        state: restarted

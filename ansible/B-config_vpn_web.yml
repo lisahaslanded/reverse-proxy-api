@@ -1,0 +1,33 @@
+---
+- name: configure web vpn
+  hosts: webservers
+  remote_user: vagrant
+  become: yes
+
+  tasks:
+    - name: install wireguard
+      apt:
+        name: wireguard
+        state: latest
+        update-cache: true
+    - name: write vpn config
+      vars:
+        web_privkey: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          31343361323635383832633436653437346635323939303437396465343936623664303130366231
+          3739356163623432616436373339313230663035346638380a306136343232396439626431613930
+          32303366383438366337356432326634336161326235653238333634383030376234396137333731
+          3161623536366232340a666230326334333333386235336432643766623138643564633837666533
+          34616132653564336265663431613732316138366530373536336366313334363361386165363730
+          3365323961346666666161636632343334653466316234386364
+        web_pubkey: jWdH/DaO9MZWqLDOyr2K+QvrWFQAb+dUtp+FzMF4ZFY=
+      template:
+        src: ./templates/web_wg0.conf.j2
+        dest: /etc/wireguard/wg0.conf
+        owner: root
+        group: root
+        mode: "0600"
+    - name: start vpn
+      shell: |
+        wg-quick down wg0
+        wg-quick up wg0

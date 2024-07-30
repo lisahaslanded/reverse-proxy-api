@@ -1,0 +1,6 @@
+---
+- import_playbook: A-config_vpn_rproxy.yml
+- import_playbook: B-config_vpn_web.yml
+- import_playbook: C-setup_web_app.yml
+- import_playbook: D-setup_rproxy.yml
+- import_playbook: E-secure_web_svr.yml
